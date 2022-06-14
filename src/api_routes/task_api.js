@@ -5,7 +5,7 @@ import Task from "../models/Tasks.js";
 const router = express.Router();
 
 // create a task
-router.post("/", async (req, res) => {
+router.post("/tasks/", async (req, res) => {
   const task = req.body;
   const task_document = new Task(task);
   try {
@@ -27,7 +27,7 @@ router.post("/", async (req, res) => {
 });
 
 //select all tasks
-router.get("/", async (req, res) => {
+router.get("/tasks/", async (req, res) => {
   try {
     const tasks = await Task.find();
     res.status(200).send(tasks);
@@ -37,7 +37,7 @@ router.get("/", async (req, res) => {
 });
 
 //select a task by id
-router.get("/:id", async (req, res) => {
+router.get("/tasks/:id", async (req, res) => {
   const id = req.params.id;
   try {
     const task = await Task.findById(id);
@@ -51,11 +51,22 @@ router.get("/:id", async (req, res) => {
 });
 
 // // update a task
-router.put("/:id", async (req, res) => {
+router.patch("/tasks/:id", async (req, res) => {
   const id = req.params.id;
-  const updated_note = req.body;
+  const updatedNote = req.body;
+  // check if update is valid:
+  const allowedUpdates = ["description", "completed"];
+  const updatedNoteFields = Object.keys(updatedNote);
+  const isValidOperation = updatedNoteFields.every((field) =>
+    allowedUpdates.includes(field)
+  );
+  if (!isValidOperation) {
+    return res
+      .status(400)
+      .send({ msg: "updates are allowed only for description and completed" });
+  }
   try {
-    const task = await Task.findByIdAndUpdate(id, updated_note, {
+    const task = await Task.findByIdAndUpdate(id, updatedNote, {
       new: true,
       runValidators: true,
     });
@@ -69,6 +80,17 @@ router.put("/:id", async (req, res) => {
 });
 
 // //delete a task
-// router.delete("/:id", (req, res) => {});
+router.delete("/tasks/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const task = await Task.findByIdAndDelete(id);
+    if(!task){
+      res.status(404).send({msg:"Task not found!"})
+    }
+    res.status(200).send(task);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
 
 export default router;

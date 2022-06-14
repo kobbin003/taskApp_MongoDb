@@ -83,32 +83,57 @@ router.get("/:id", async (req, res) => {
 // update password or name
 router.patch("/:id", async (req, res) => {
   const id = req.params.id;
-  const updatedUser = req.body;
+  const userUpdates = req.body;
+  // send error message if wrong updates(other than name and password) are patched
+  const allowedUpdates = ["name", "password"];
+  const allowedUpdatesFromUserUpdates = Object.keys(userUpdates);
+
+  console.log(allowedUpdatesFromUserUpdates);
+  // operation is valid only if the userUpdates includes allowedUpdates viz. 'name' and 'password'
+  const isValidOperation = allowedUpdatesFromUserUpdates.every((userFields) =>
+    allowedUpdates.includes(userFields)
+  );
+  if (!isValidOperation) {
+    return res
+      .status(400)
+      .send({ msg: "updates for name and password are only allowed" });
+  }
   try {
-    // const user = await User.findByIdAndUpdate(
-    //   id,
-    //   updatedUser,
-    //   { new: true, runValidators: true }
-    // );
-    // if (!user) {
-    //   res.status(404).send({ msg: "user not found" });
-    // }
-    const user_by_id = await User.findById(id);
-    const user_by_email = await User.findOne({ email: updatedUser.email });
-    if (user_by_id && user_by_email) {
-      user_by_id.name = updatedUser.name;
-      user_by_id.password = updatedUser.password;
-      await user_by_id.save();
-      res.status(200).send(user_by_id);
-    } else {
+    const user = await User.findByIdAndUpdate(id, userUpdates, {
+      new: true,
+      runValidators: true,
+    });
+    if (!user) {
       res.status(404).send({ msg: "user not found" });
     }
+    res.status(200).send(user);
+    // const user_by_id = await User.findById(id);
+    // const user_by_email = await User.findOne({ email: userUpdates.email });
+    // // alllow only if the id and email are related
+    // if (user_by_id && user_by_email) {
+    //   user_by_id.name = userUpdates.name;
+    //   user_by_id.password = userUpdates.password;
+    //   await user_by_id.save();
+    //   res.status(200).send(user_by_id);
+    // } else {
+    //   res.status(404).send({ msg: "user not found" });
+    // }
   } catch (error) {
     res.status(400).send(error);
   }
 });
 
-router.patch('/:id',(req, res)=>{
-  
+//delete a user
+router.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const user = await User.findByIdAndDelete(id);
+    if(!user){
+      res.status(404).send({msg:"user is not found"})
+    }
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 export default router;
