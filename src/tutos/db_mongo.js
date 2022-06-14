@@ -1,15 +1,4 @@
-// import mongodb from "mongodb";
-
-// const MongoClient = mongodb.mongoClient;
-// const url = "http://localhost:3000/";
-
-// MongoClient.connect(url, (err, db) => {
-//   if (err) throw err;
-//   console.log("Database created!");
-//   db.close();
-// });
-
-import { Db, MongoClient, ServerApiVersion } from "mongodb";
+import {MongoClient, ServerApiVersion } from "mongodb";
 const uri =
   "mongodb+srv://kobin:3IHWIh5Vqdc90rjt@cluster0.ibgdcyq.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri, {
