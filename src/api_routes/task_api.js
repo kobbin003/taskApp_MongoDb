@@ -1,7 +1,6 @@
 import express from "express";
-import mongoose from "mongoose";
-import validator from "validator";
 import Task from "../models/Tasks.js";
+
 const router = express.Router();
 
 // create a task
@@ -53,10 +52,10 @@ router.get("/tasks/:id", async (req, res) => {
 // // update a task
 router.patch("/tasks/:id", async (req, res) => {
   const id = req.params.id;
-  const updatedNote = req.body;
+  const updatedTask = req.body;
   // check if update is valid:
   const allowedUpdates = ["description", "completed"];
-  const updatedNoteFields = Object.keys(updatedNote);
+  const updatedNoteFields = Object.keys(updatedTask);
   const isValidOperation = updatedNoteFields.every((field) =>
     allowedUpdates.includes(field)
   );
@@ -66,13 +65,17 @@ router.patch("/tasks/:id", async (req, res) => {
       .send({ msg: "updates are allowed only for description and completed" });
   }
   try {
-    const task = await Task.findByIdAndUpdate(id, updatedNote, {
-      new: true,
-      runValidators: true,
-    });
+    // const task = await Task.findByIdAndUpdate(id, updatedTask, {
+    //   new: true,
+    //   runValidators: true,
+    // });
+    const task = await Task.findById(id);
+
     if (!task) {
       return res.status(404).send({ msg: "Task not found" });
     }
+    Object.assign(task, updatedTask);
+    await task.save();
     res.status(200).send(task);
   } catch (error) {
     res.status(400).send(error);
@@ -84,8 +87,8 @@ router.delete("/tasks/:id", async (req, res) => {
   const id = req.params.id;
   try {
     const task = await Task.findByIdAndDelete(id);
-    if(!task){
-      res.status(404).send({msg:"Task not found!"})
+    if (!task) {
+      res.status(404).send({ msg: "Task not found!" });
     }
     res.status(200).send(task);
   } catch (error) {
