@@ -1,0 +1,34 @@
+steps in setting-up authentication & authorization:
+
+1. hash passsword:- use bcrypt(npm)
+
+2. user login:- create a separate api end point for login purpose.
+
+3. generating auth token:- use JSONwebtokens(npm)- 
+There will be two categories of api end pint:
+a. public: anyone can access it.
+b. private: only the one authorized to do so can do it.
+
+For private end-points we would have to generate 
+"authorization token"[through the login user end-point]
+ to verify the user.
+
+4. express middlewares.(for e.g auth.js):- to accept authenticating tokens
+
+5. Hide private datas such as passwods and tokens.
+two ways to do this:
+a. create a instance method.
+b. name the instance method as toJSON.
+
+# ---------------------------------------------------------------------------- #
+6. Relationship between two models:
+two ways:
+a. 1st in 2nd.
+b. 2nd in 1st.
+
+Pointers: 
+#1: Follow the principle of cardinality:
+    i.e make the document as small as possible
+#2: use virtuals for the other half.
+
+# ---------------------------------------------------------------------------- #

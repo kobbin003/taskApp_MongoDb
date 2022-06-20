@@ -1,4 +1,5 @@
 import express from "express";
+import { auth } from "../middleware/auth.js";
 import User from "../models/Users.js";
 
 const router = express.Router();
@@ -23,13 +24,22 @@ router.post("/", async (req, res) => {
   */
   try {
     // find if email is already taken
-    const user_exists = await User.findOne({ email: user_document.email });
+    //.[not required with unique:true]
+    /**
+     * const user_exists = await User.findOne({ email: user_document.email });
     if (user_exists) {
       return res.status(400).send({ msg: "this email is already taken!" });
     }
+     */
+
     // save the created document
     await user_document.save();
-    res.status(201).send(user_document);
+    //generate token
+    const token = await user_document.generateAuthToken();
+    // console.log("getpublicProfile", user_document.getPublicProfile(token));
+    res
+      .status(201)
+      .send({ user: user_document.getPublicProfile(token), token });
   } catch (error) {
     res.status(400).send(error);
   }
@@ -45,14 +55,28 @@ router.post("/", async (req, res) => {
    */
 });
 
-// get users
-router.get("/", async (req, res) => {
+// get all users
+router.get("/all", async (req, res) => {
   try {
-    const users = await User.find();
-    res.status(200).send(users);
+    const user = await User.find();
+    res.status(200).send(user);
+    // .send(user.map((usr) => usr.getPublicProfile(usr.tokens[0])));
   } catch (error) {
     res.status(500).send(error);
   }
+});
+// get user's profile
+router.get("/me", auth, async (req, res) => {
+  const user = req.user;
+  res.status(200).send(user);
+  // try {
+  //   const users = await User.find();
+  //   res.status(200).send(users);
+  // } catch (error) {
+  //   // res.status(500).send(error);
+  //   res.status(500);
+  //   //"error message has been handled in the auth.js"
+  // }
   /**
    User.find()
     .then((data) => {
@@ -66,36 +90,68 @@ router.get("/", async (req, res) => {
    */
 });
 
-//get user by id
-router.get("/:id", async (req, res) => {
-  const id = req.params.id;
+// //get user by id
+// router.get("/:id", auth, async (req, res) => {
+//   const user = req.user;
+//   res.status(200).send(user);
+//   /**
+//    *
+//    * const id = req.params.id;
+//   try {
+//     const user = await User.findById(id);
+//     if (!user) {
+//       return res.status(404).send({ msg: "User not found" });
+//     }
+//     res.status(200).send(user);
+//   } catch (error) {
+//     res.status(500).send(err);
+//   }
+//    */
+//   /* -------------------------------------------------------------------------- */
+//   /**
+//    User.findById(id)
+//     .then((user) => {
+//       if (!user) {
+//         return res.status(404).send({ msg: "User not found" });
+//       }
+//       // console.log(user);
+//       res.status(200).send(user);
+//     })
+//     .catch((err) => {
+//       // console.log(err);
+//       res.status(500).send(err);
+//     });
+//    */
+// });
+
+//update user profile
+router.patch("/me", auth, async (req, res) => {
+  // const user = req.user;
+  const userUpdates = req.body;
+  // send error message if wrong updates(other than name and password) are patched
+  const allowedUpdates = ["name", "password"];
+  const allowedUpdatesFromUserUpdates = Object.keys(userUpdates);
+
+  // operation is valid only if the userUpdates includes allowedUpdates viz. 'name' and 'password'
+  const isValidOperation = allowedUpdatesFromUserUpdates.every((userFields) =>
+    allowedUpdates.includes(userFields)
+  );
+  if (!isValidOperation) {
+    return res
+      .status(400)
+      .send({ msg: "updates for name and password are only allowed" });
+  }
   try {
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(404).send({ msg: "User not found" });
-    }
+    const user = req.user;
+    Object.assign(user, userUpdates);
+    await user.save();
     res.status(200).send(user);
   } catch (error) {
-    res.status(500).send(err);
+    res.status(400).send();
   }
-  /**
-   User.findById(id)
-    .then((user) => {
-      if (!user) {
-        return res.status(404).send({ msg: "User not found" });
-      }
-      // console.log(user);
-      res.status(200).send(user);
-    })
-    .catch((err) => {
-      // console.log(err);
-      res.status(500).send(err);
-    });
-   */
 });
-
 // update password or name
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", auth, async (req, res) => {
   const id = req.params.id;
   const userUpdates = req.body;
   // send error message if wrong updates(other than name and password) are patched
@@ -141,14 +197,16 @@ router.patch("/:id", async (req, res) => {
 });
 
 //delete a user
-router.delete("/:id", async (req, res) => {
-  const id = req.params.id;
+router.delete("/me", auth, async (req, res) => {
+  // const id = req.params.id;
+  // const id = req.user.id;
   try {
-    const user = await User.findByIdAndDelete(id);
-    if (!user) {
-      res.status(404).send({ msg: "user is not found" });
-    }
-    res.status(200).send(user);
+    // const user = await User.findByIdAndDelete(id);
+    // if (!user) {
+    //   res.status(404).send({ msg: "user is not found" });
+    // }
+    await req.user.remove();
+    res.status(200).send(req.user);
   } catch (error) {
     res.status(500).send(error);
   }
