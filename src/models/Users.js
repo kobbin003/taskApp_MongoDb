@@ -3,6 +3,7 @@ import validator from "validator";
 import bcrypt from "bcrypt";
 import "dotenv/config";
 import jwt from "jsonwebtoken";
+import Task from "./Tasks.js";
 //create schema
 const userSchema = new mongoose.Schema(
   {
@@ -137,6 +138,13 @@ userSchema.pre("save", async function (next) {
     user.password = await bcrypt.hash(user.password, saltRounds);
   }
   // console.log("just before saving!");
+  next();
+});
+
+userSchema.pre("remove", async function (next) {
+  const user = this;
+  //remove user's tasks:
+  await Task.deleteMany({ user: user._id });
   next();
 });
 // create User Model

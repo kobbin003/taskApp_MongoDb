@@ -1,5 +1,6 @@
 import express from "express";
 import { auth } from "../middleware/auth.js";
+import Task from "../models/Tasks.js";
 import User from "../models/Users.js";
 
 const router = express.Router();
@@ -65,6 +66,7 @@ router.get("/all", async (req, res) => {
     res.status(500).send(error);
   }
 });
+
 // get user's profile
 router.get("/me", auth, async (req, res) => {
   const user = req.user;
@@ -206,6 +208,7 @@ router.delete("/me", auth, async (req, res) => {
     //   res.status(404).send({ msg: "user is not found" });
     // }
     await req.user.remove();
+    
     res.status(200).send(req.user);
   } catch (error) {
     res.status(500).send(error);
