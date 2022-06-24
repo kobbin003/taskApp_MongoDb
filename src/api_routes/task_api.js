@@ -26,13 +26,38 @@ router.post("/tasks/", auth, async (req, res) => {
  */
 });
 
-//select all tasks of the user
+//select all tasks of the user based on "completed"
+// GET /tasks?completed=<boolean>
+// GET /tasks?limit=<number>&skip=<number>
+//GET /tasks?sort=description:desc
 router.get("/tasks/", auth, async (req, res) => {
+  // const completed =
+  //   (req.query.completed && req.query.completed === "true") ? true : false;
+
+  let completed;
+  if (req.query.completed) {
+    completed = req.query.completed === "true";
+  }
+  const sort = {};
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(":");
+    sort[sortBy[0]] = sortBy[1] === "desc" ? -1 : 1;
+  }
   try {
     // const tasks = await Task.find({ user: req.user._id });
     // res.status(200).send(tasks);
     // OR [ALTERNATIVE SOLUTION]
-    await req.user.populate("tasks");
+    // foreign field:       , localfield:
+    await req.user.populate({
+      path: "tasks",
+      match: { completed },
+      select: "description completed user -_id",
+      options: {
+        limit: req.query.limit,
+        skip: req.query.skip,
+        sort,
+      },
+    });
     res.status(200).send(req.user.tasks);
   } catch (error) {
     res.status(400).send(error);

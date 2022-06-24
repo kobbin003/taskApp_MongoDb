@@ -47,14 +47,19 @@ const userSchema = new mongoose.Schema(
       },
     ],
   },
-  { toJSON: { virtuals: true }, toObject: { virtuals: true } }
+  { toJSON: { virtuals: true }, toObject: { virtuals: true }, timestamps: true }
 );
 
 //.use virtuals:
 userSchema.virtual("tasks", {
-  ref: "task", //name of the model
-  localField: "_id",
-  foreignField: "user", //field name in the task for users
+  ref: "task", //name of the model "from which" we want to populate
+  localField: "_id", // any field of the current(user) collection.
+  foreignField: "user", //field name in the task for users.
+  /**
+   * Mongoose will populate those documents from the model 
+   * given in ref, whose foreignField value will match 
+   * with the localField value of the current collection.
+   */
 });
 
 //. add a "static method" to the modelschema:
