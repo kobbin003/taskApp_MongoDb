@@ -9,7 +9,8 @@ export const auth = async (req, res, next) => {
   }
   try {
     const decoded = await jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).populate('tasks');
+    const user = await User.findById(decoded.id);
+    // const user = await User.findById(decoded.id).populate('tasks');
     // res.status(200).send(user);
     if (!user) {
       throw new Error("User not found!");

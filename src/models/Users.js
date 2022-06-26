@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
+    avatar: {
+      type: Buffer,
+      // required: true,
+    },
     tokens: [
       {
         token: {
@@ -47,6 +51,7 @@ const userSchema = new mongoose.Schema(
       },
     ],
   },
+  // optionals to make toJSON and console.log work
   { toJSON: { virtuals: true }, toObject: { virtuals: true }, timestamps: true }
 );
 
@@ -56,8 +61,8 @@ userSchema.virtual("tasks", {
   localField: "_id", // any field of the current(user) collection.
   foreignField: "user", //field name in the task for users.
   /**
-   * Mongoose will populate those documents from the model 
-   * given in ref, whose foreignField value will match 
+   * Mongoose will populate those documents from the model
+   * given in ref, whose foreignField value will match
    * with the localField value of the current collection.
    */
 });

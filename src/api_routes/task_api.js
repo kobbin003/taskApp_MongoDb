@@ -26,7 +26,7 @@ router.post("/tasks/", auth, async (req, res) => {
  */
 });
 
-//select all tasks of the user based on "completed"
+//select all tasks of the user based on given queries
 // GET /tasks?completed=<boolean>
 // GET /tasks?limit=<number>&skip=<number>
 //GET /tasks?sort=description:desc
@@ -46,7 +46,8 @@ router.get("/tasks/", auth, async (req, res) => {
   try {
     // const tasks = await Task.find({ user: req.user._id });
     // res.status(200).send(tasks);
-    // OR [ALTERNATIVE SOLUTION]
+
+    // OR [ALTERNATIVE SOLUTION] using populate:
     // foreign field:       , localfield:
     await req.user.populate({
       path: "tasks",

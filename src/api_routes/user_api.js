@@ -131,7 +131,7 @@ router.patch("/me", auth, async (req, res) => {
   // const user = req.user;
   const userUpdates = req.body;
   // send error message if wrong updates(other than name and password) are patched
-  const allowedUpdates = ["name", "password"];
+  const allowedUpdates = ["name", "password","avatar"];
   const allowedUpdatesFromUserUpdates = Object.keys(userUpdates);
 
   // operation is valid only if the userUpdates includes allowedUpdates viz. 'name' and 'password'

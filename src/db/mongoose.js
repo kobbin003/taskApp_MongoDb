@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
 import { ServerApiVersion } from "mongodb";
 import validator from "validator";
+import "dotenv/config";
 // the uri
-const uri =
-  "mongodb+srv://kobin:3IHWIh5Vqdc90rjt@cluster0.ibgdcyq.mongodb.net/?retryWrites=true&w=majority";
+const username = process.env.USERNAME;
+const password = process.env.PASSWORD;
+const uri = `mongodb+srv://${username}:${password}@cluster0.ibgdcyq.mongodb.net/?retryWrites=true&w=majority`;
 
 // connect to mongoose
 async function connectDb() {
