@@ -2,8 +2,16 @@ import express from "express";
 import { auth } from "../middleware/auth.js";
 import Task from "../models/Tasks.js";
 import User from "../models/Users.js";
-
+import nodemailer from "nodemailer";
+import {
+  sendWelcomeEmail,
+  sendCancelEmail,
+} from "../email/emailMsg.js";
 const router = express.Router();
+
+// async function sendWelcomeEmail() {
+//   return "asyncfunction";
+// }
 
 //create a user
 router.post("/", async (req, res) => {
@@ -23,7 +31,12 @@ router.post("/", async (req, res) => {
   const hashedPassword = await bcrypt.hash(password, saltRounds);
   user_document.password = hashedPassword;
   */
+
   try {
+    const infoId = await sendWelcomeEmail();
+    console.log("infoId", infoId);
+    //send a welcome greeting
+
     // find if email is already taken
     //.[not required with unique:true]
     /**
@@ -42,7 +55,7 @@ router.post("/", async (req, res) => {
       .status(201)
       .send({ user: user_document.getPublicProfile(token), token });
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).send(error.message);
   }
   /**
    user_document
@@ -131,7 +144,7 @@ router.patch("/me", auth, async (req, res) => {
   // const user = req.user;
   const userUpdates = req.body;
   // send error message if wrong updates(other than name and password) are patched
-  const allowedUpdates = ["name", "password","avatar"];
+  const allowedUpdates = ["name", "password", "avatar"];
   const allowedUpdatesFromUserUpdates = Object.keys(userUpdates);
 
   // operation is valid only if the userUpdates includes allowedUpdates viz. 'name' and 'password'
@@ -208,7 +221,10 @@ router.delete("/me", auth, async (req, res) => {
     //   res.status(404).send({ msg: "user is not found" });
     // }
     await req.user.remove();
-    
+    // delete user:
+    const infoId = await sendCancelEmail();
+    console.log("infoId-2", infoId);
+
     res.status(200).send(req.user);
   } catch (error) {
     res.status(500).send(error);
