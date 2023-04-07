@@ -34,7 +34,9 @@ app.use("/user", loginRouter);
 app.use("/users", usersRouter);
 app.use(tasksRouter);
 app.use("/", docRouter);
-app.get("/hello","HELLO USER");
+app.get("/hello",()=>{
+res.send("HELLO USER")
+});
 app.listen(port, (err) => {
   if (err) throw err;
   console.log("connection established!");
